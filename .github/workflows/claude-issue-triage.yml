@@ -66,5 +66,13 @@ jobs:
                - **Próximos pasos sugeridos**: 2-4 puntos concretos que sirvan de punto de
                  partida para implementar la solución más adelante.
 
+               Formatea SIEMPRE el comentario en Markdown válido de GitHub: usa encabezados
+               (`##`) o negritas (`**texto**`) para cada sección, listas con `-` para los
+               próximos pasos, y bloques de código con backticks (simples para nombres de
+               función/archivo, triples ```js para fragmentos de código) al citar código.
+               Esto aplica a este comentario y a cualquier otro comentario o mensaje que
+               publiques en el issue durante el triage (incluidas notas sobre las labels
+               aplicadas) — nunca publiques texto plano sin formato.
+
                No implementes la solución ni escribas código nuevo en este workflow — solo
                labels + diagnóstico.
