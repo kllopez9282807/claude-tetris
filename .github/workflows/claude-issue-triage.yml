@@ -1,0 +1,70 @@
+name: Claude Issue Triage
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+          claude_args: '--allowedTools "Bash(gh label list:*),Bash(gh issue edit:*),Bash(gh issue comment:*)"'
+
+          prompt: |
+            Estás analizando el issue #${{ github.event.issue.number }} de este repositorio
+            ("${{ github.event.issue.title }}"), un juego de Tetris en JavaScript vainilla
+            (ver CLAUDE.md para la arquitectura: game.js, index.html, style.css, sin build/tests).
+
+            Cuerpo del issue:
+            ---
+            ${{ github.event.issue.body }}
+            ---
+
+            Haz lo siguiente:
+
+            1. Ejecuta `gh label list` para ver las labels que ya existen en este repositorio.
+               Usa SOLO esas labels — nunca crees una label nueva.
+
+            2. Analiza el issue y decide qué labels existentes aplican (puede ser ninguna,
+               una o varias: bug, enhancement, documentation, question, accessibility,
+               good first issue, help wanted, duplicate, invalid, wontfix, etc.).
+               Aplícalas con:
+               `gh issue edit ${{ github.event.issue.number }} --add-label "label1,label2"`
+               No añadas una label que el issue ya tenga.
+
+            3. Lee el código relevante del repo (game.js, index.html, style.css, CLAUDE.md)
+               para entender si el problema descrito es reproducible/localizable en el código
+               actual.
+
+            4. Publica UN comentario en el issue (no edites el título ni el cuerpo original)
+               con:
+               `gh issue comment ${{ github.event.issue.number }} --body "..."`
+
+               El comentario debe ser un diagnóstico breve y estructurado en español, con:
+               - **Resumen**: qué está pidiendo o reportando el issue, en una frase.
+               - **Diagnóstico**: causa probable o área del código implicada, citando
+                 archivo y función/sección concreta cuando sea posible (por ejemplo,
+                 `collide`, `lockPiece`, `clearLines`, `draw`, el listener de `keydown`, etc.).
+                 Si es una petición de feature sin bug, describe qué habría que tocar para
+                 implementarla.
+               - **Complejidad estimada**: baja / media / alta, con una razón breve.
+               - **Próximos pasos sugeridos**: 2-4 puntos concretos que sirvan de punto de
+                 partida para implementar la solución más adelante.
+
+               No implementes la solución ni escribas código nuevo en este workflow — solo
+               labels + diagnóstico.
